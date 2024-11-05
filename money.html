@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            width: 200px;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .source {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Money Tracker</h1>
+    <div id="sourcesContainer"></div>
+    <button onclick="addSource()">Add Amount</button>
+    <button onclick="calculateTotal()">Calculate Total</button>
+    <button onclick="clearData()">Clear Data</button>
+
+    <div class="result" id="result"></div>
+
+    <script>
+        // Load saved amounts from localStorage
+        function loadSources() {
+            const sources = JSON.parse(localStorage.getItem('moneyTrackerSources')) || [];
+            sources.forEach(source => {
+                addSource(source.amount);
+            });
+        }
+
+        // Add a new amount input
+        function addSource(amount = '') {
+            const sourcesContainer = document.getElementById('sourcesContainer');
+            const newSource = document.createElement('div');
+            newSource.className = 'source';
+            newSource.innerHTML = `
+                <input type="number" placeholder="Enter amount" value="${amount}" required>
+                <button onclick="removeSource(this)">Remove</button>
+            `;
+            sourcesContainer.appendChild(newSource);
+        }
+
+        // Remove an amount input
+        function removeSource(button) {
+            const sourceDiv = button.parentElement;
+            sourceDiv.remove();
+            saveSources(); // Save changes after removal
+        }
+
+        // Calculate total amount
+        function calculateTotal() {
+            const sources = document.querySelectorAll('#sourcesContainer .source');
+            let total = 0;
+
+            sources.forEach(source => {
+                const amountInput = source.querySelector('input[type="number"]');
+                const amount = parseFloat(amountInput.value);
+
+                if (!isNaN(amount)) {
+                    total += amount;
+                }
+            });
+
+            document.getElementById('result').innerText = `Total Amount: ${total.toFixed(2)}`;
+            saveSources(); // Save sources after calculation
+        }
+
+        // Save amounts to localStorage
+        function saveSources() {
+            const sources = [];
+            const sourceElements = document.querySelectorAll('#sourcesContainer .source');
+
+            sourceElements.forEach(source => {
+                const amountInput = source.querySelector('input[type="number"]');
+                const amount = amountInput.value;
+
+                if (amount) {
+                    sources.push({ amount });
+                }
+            });
+
+            localStorage.setItem('moneyTrackerSources', JSON.stringify(sources));
+        }
+
+        // Clear all data
+        function clearData() {
+            localStorage.removeItem('moneyTrackerSources');
+            document.getElementById('sourcesContainer').innerHTML = '';
+            document.getElementById('result').innerText = '';
+        }
+
+        // Load amounts on page load
+        window.onload = loadSources;
+    </script>
+</body>
+
+</html>
