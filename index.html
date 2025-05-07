@@ -5,55 +5,300 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Money Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #6200ea;
+            --primary-light: #9d46ff;
+            --primary-dark: #0a00b6;
+            --secondary: #03dac6;
+            --error: #cf6679;
+            --background: #ffffff;
+            --surface: #f5f5f5;
+            --on-primary: #ffffff;
+            --on-secondary: #000000;
+            --on-background: #121212;
+            --on-surface: #121212;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--background);
+            color: var(--on-background);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .container {
+            background-color: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .subheader {
+            color: var(--on-surface);
+            opacity: 0.75;
+            font-weight: 400;
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .card-title i {
+            margin-right: 0.5rem;
         }
 
         input {
-            margin: 10px 0;
-            padding: 10px;
-            width: 200px;
+            display: block;
+            width: 100%;
+            padding: 0.8rem 1rem;
+            margin: 0.5rem 0 1rem 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border 0.2s, box-shadow 0.2s;
         }
 
-        button {
-            padding: 10px 15px;
-            font-size: 16px;
-            margin-top: 10px;
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(98, 0, 234, 0.2);
         }
 
-        .result {
-            margin-top: 20px;
-            font-weight: bold;
-        }
-
-        .difference {
-            margin-top: 20px;
-            font-weight: bold;
+        .sources-list {
+            margin: 1rem 0;
         }
 
         .source {
-            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .source input {
+            margin: 0 0.5rem 0 0;
+            flex: 1;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn i {
+            margin-right: 0.5rem;
+        }
+
+        .trash-icon {
+            margin-right: 0 !important;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--on-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--on-secondary);
+        }
+
+        .btn-secondary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(98, 0, 234, 0.1);
+        }
+
+        .btn-danger {
+            background-color: var(--error);
+            color: white;
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            border-radius: 50%;
+            min-width: 2.2rem;
+            min-height: 2.2rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .results {
+            margin-top: 2rem;
+        }
+
+        .result-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-label {
+            color: var(--on-surface);
+            opacity: 0.8;
+        }
+
+        .result-value {
+            font-weight: 600;
+        }
+
+        .result-positive {
+            color: #4caf50;
+        }
+
+        .result-negative {
+            color: var(--error);
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+
+            .container {
+                padding: 1.25rem;
+                border-radius: 8px;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn-group .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>Money Tracker</h1>
-    <div> 
-      <h3> Should have Amount </h3>
-      <input type="number" placeholder="Should have Amount" id="shouldHaveAmount">
-    </div>
-    <div id="sourcesContainer">
-      <h3> Sources </h3>
-    </div>
-    <button onclick="addSource()">Add Amount</button>
-    <button onclick="calculateTotal()">Calculate Total</button>
-    <button onclick="clearData()">Clear Data</button>
+    <div class="container">
+        <header>
+            <h1>Money Tracker</h1>
+            <p class="subheader">Track your finances with ease</p>
+        </header>
 
-    <div class="result" id="result"></div>
-    <div class="difference" id="difference"></div>
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-wallet"></i>Expected Balance</h3>
+            <label for="shouldHaveAmount">How much money should you have?</label>
+            <input type="number" placeholder="Enter your expected amount" id="shouldHaveAmount">
+        </div>
+
+        <div class="card">
+            <h3 class="card-title"><i class="fas fa-money-bill-wave"></i>Actual Money Sources</h3>
+            <div id="sourcesContainer" class="sources-list"></div>
+            <button class="btn btn-outline" onclick="addSource()">
+                <i class="fas fa-plus"></i> Add Money Source
+            </button>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="calculateTotal()">
+                <i class="fas fa-calculator"></i> Calculate Balance
+            </button>
+            <button class="btn btn-danger" onclick="clearData()">
+                <i class="fas fa-trash"></i> Reset All
+            </button>
+        </div>
+
+        <div class="results">
+            <div id="resultsCard" class="result-card" style="display: none;">
+                <div class="result-item">
+                    <span class="result-label">Total Money:</span>
+                    <span class="result-value" id="result">$0.00</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Expected Amount:</span>
+                    <span class="result-value" id="expectedAmount">$0.00</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Difference:</span>
+                    <span class="result-value" id="difference">$0.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Load saved amounts from localStorage
@@ -63,7 +308,6 @@
                 addSource(source.amount);
             });
             const shouldHaveAmount = localStorage.getItem('shouldHaveAmount');
-            console.log(shouldHaveAmount);
             document.getElementById('shouldHaveAmount').value = shouldHaveAmount;
         }
 
@@ -74,7 +318,9 @@
             newSource.className = 'source';
             newSource.innerHTML = `
                 <input type="number" placeholder="Enter amount" value="${amount}" required>
-                <button onclick="removeSource(this)">Remove</button>
+                <button class="btn btn-icon btn-danger" onclick="removeSource(this)">
+                    <i class="fas fa-trash trash-icon"></i>
+                </button>
             `;
             sourcesContainer.appendChild(newSource);
         }
@@ -88,7 +334,7 @@
 
         // Calculate total amount
         function calculateTotal() {
-            const shouldHaveAmount = parseFloat(document.getElementById('shouldHaveAmount').value);
+            const shouldHaveAmount = parseFloat(document.getElementById('shouldHaveAmount').value) || 0;
             const sources = document.querySelectorAll('#sourcesContainer .source');
             let currentAmount = 0;
 
@@ -101,9 +347,24 @@
                 }
             });
 
-            document.getElementById('result').innerText = `Total Amount: ${currentAmount.toFixed(2)}`;
-            document.getElementById('difference').innerText = `Difference: ${currentAmount - shouldHaveAmount }`;
+            const difference = currentAmount - shouldHaveAmount;
+            const differenceClass = difference >= 0 ? 'result-positive' : 'result-negative';
+            const differenceSign = difference >= 0 ? '+' : '';
+
+            document.getElementById('result').innerText = formatCurrency(currentAmount);
+            document.getElementById('expectedAmount').innerText = formatCurrency(shouldHaveAmount);
+            document.getElementById('difference').innerText = differenceSign + formatCurrency(difference);
+            document.getElementById('difference').className = `result-value ${differenceClass}`;
+            
+            // Show the results card
+            document.getElementById('resultsCard').style.display = 'block';
+            
             saveSources(); // Save sources after calculation
+        }
+
+        // Format currency with $ sign and 2 decimal places
+        function formatCurrency(amount) {
+            return '$' + amount.toFixed(2);
         }
 
         // Save amounts to localStorage
@@ -128,13 +389,25 @@
         // Clear all data
         function clearData() {
             localStorage.removeItem('moneyTrackerSources');
+            localStorage.removeItem('shouldHaveAmount');
             document.getElementById('sourcesContainer').innerHTML = '';
-            document.getElementById('result').innerText = '';
             document.getElementById('shouldHaveAmount').value = '';
+            document.getElementById('resultsCard').style.display = 'none';
         }
 
-        // Load amounts on page load
-        window.onload = loadSources;
+        // Add at least one source field if none exist
+        function ensureSourceField() {
+            const sources = document.querySelectorAll('#sourcesContainer .source');
+            if (sources.length === 0) {
+                addSource();
+            }
+        }
+
+        // Initialize page
+        window.onload = function() {
+            loadSources();
+            ensureSourceField();
+        };
     </script>
 </body>
 
