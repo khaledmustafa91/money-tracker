@@ -107,9 +107,71 @@
 
         .source {
             display: flex;
-            align-items: center;
-            margin-bottom: 0.75rem;
+            flex-direction: column;
+            margin-bottom: 1.25rem;
             animation: fadeIn 0.3s ease-in-out;
+            background-color: white;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            transition: box-shadow 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .source:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--surface);
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .source-title {
+            font-weight: 500;
+            color: var(--primary);
+            flex-grow: 1;
+        }
+
+        .source-name-input {
+            font-weight: 500;
+            color: var(--primary);
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            width: 100%;
+            padding: 0.25rem 0;
+            margin: 0;
+            border-bottom: 1px dashed transparent;
+        }
+
+        .source-name-input:focus {
+            outline: none;
+            border-bottom: 1px dashed var(--primary-light);
+            box-shadow: none;
+        }
+
+        .source-content {
+            padding: 1rem;
+        }
+
+        .source-fields {
+            display: flex;
+            flex: 1;
+            width: 100%;
+        }
+
+        .source-amount {
+            flex: 1;
+            font-size: 1.1rem;
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 500;
         }
 
         @keyframes fadeIn {
@@ -118,8 +180,37 @@
         }
 
         .source input {
-            margin: 0 0.5rem 0 0;
+            margin: 0;
             flex: 1;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+
+            .container {
+                padding: 1.25rem;
+                border-radius: 8px;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn-group .btn {
+                width: 100%;
+            }
+
+            .source-fields {
+                flex-direction: column;
+                gap: 0.5rem;
+                width: 100%;
+            }
+
+            .source-amount {
+                min-width: unset;
+            }
         }
 
         .btn {
@@ -214,6 +305,44 @@
             border-bottom: 1px solid #eee;
         }
 
+        .sources-breakdown {
+            margin-top: 1.5rem;
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .breakdown-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1rem;
+        }
+
+        .source-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            font-size: 0.95rem;
+            background-color: transparent;
+            align-items: center;
+        }
+
+        .source-item:not(:last-child) {
+            border-bottom: 1px solid #eee;
+        }
+
+        .source-name {
+            color: var(--on-surface);
+        }
+
+        .source-amount {
+            font-weight: 500;
+        }
+
         .result-label {
             color: var(--on-surface);
             opacity: 0.8;
@@ -229,25 +358,6 @@
 
         .result-negative {
             color: var(--error);
-        }
-
-        @media (max-width: 600px) {
-            body {
-                padding: 1rem;
-            }
-
-            .container {
-                padding: 1.25rem;
-                border-radius: 8px;
-            }
-
-            .btn-group {
-                flex-direction: column;
-            }
-
-            .btn-group .btn {
-                width: 100%;
-            }
         }
     </style>
 </head>
@@ -297,6 +407,11 @@
                     <span class="result-value" id="difference">$0.00</span>
                 </div>
             </div>
+            
+            <div id="breakdownCard" class="sources-breakdown" style="display: none;">
+                <div class="breakdown-title">Sources Breakdown</div>
+                <div id="sourcesBreakdown"></div>
+            </div>
         </div>
     </div>
 
@@ -305,29 +420,48 @@
         function loadSources() {
             const sources = JSON.parse(localStorage.getItem('moneyTrackerSources')) || [];
             sources.forEach(source => {
-                addSource(source.amount);
+                addSource(source.amount, source.name, source.id);
             });
             const shouldHaveAmount = localStorage.getItem('shouldHaveAmount');
             document.getElementById('shouldHaveAmount').value = shouldHaveAmount;
         }
 
+        // Generate unique ID for source
+        function generateSourceId() {
+            return Date.now() + Math.floor(Math.random() * 1000);
+        }
+
         // Add a new amount input
-        function addSource(amount = '') {
+        function addSource(amount = '', name = '', id = null) {
+            const sourceId = id || generateSourceId();
             const sourcesContainer = document.getElementById('sourcesContainer');
             const newSource = document.createElement('div');
             newSource.className = 'source';
+            newSource.dataset.id = sourceId;
+            
             newSource.innerHTML = `
-                <input type="number" placeholder="Enter amount" value="${amount}" required>
-                <button class="btn btn-icon btn-danger" onclick="removeSource(this)">
-                    <i class="fas fa-trash trash-icon"></i>
-                </button>
+                <div class="source-header">
+                    <div class="source-title">
+                        <input type="text" placeholder="Source name" value="${name}" 
+                               class="source-name-input" oninput="saveSources()">
+                    </div>
+                    <button class="btn btn-icon btn-danger" onclick="removeSource(this)">
+                        <i class="fas fa-trash trash-icon"></i>
+                    </button>
+                </div>
+                <div class="source-content">
+                    <div class="source-fields">
+                        <input type="number" placeholder="Amount" value="${amount}" required class="source-amount"
+                               oninput="saveSources()">
+                    </div>
+                </div>
             `;
             sourcesContainer.appendChild(newSource);
         }
 
         // Remove an amount input
         function removeSource(button) {
-            const sourceDiv = button.parentElement;
+            const sourceDiv = button.closest('.source');
             sourceDiv.remove();
             saveSources(); // Save changes after removal
         }
@@ -337,13 +471,18 @@
             const shouldHaveAmount = parseFloat(document.getElementById('shouldHaveAmount').value) || 0;
             const sources = document.querySelectorAll('#sourcesContainer .source');
             let currentAmount = 0;
+            const sourcesBreakdown = [];
 
             sources.forEach(source => {
-                const amountInput = source.querySelector('input[type="number"]');
+                const amountInput = source.querySelector('.source-amount');
+                const nameInput = source.querySelector('.source-name-input');
                 const amount = parseFloat(amountInput.value);
+                const name = nameInput.value || 'Unnamed source';
+                const sourceId = source.dataset.id;
 
                 if (!isNaN(amount)) {
                     currentAmount += amount;
+                    sourcesBreakdown.push({ name, amount, id: sourceId });
                 }
             });
 
@@ -356,8 +495,33 @@
             document.getElementById('difference').innerText = differenceSign + formatCurrency(difference);
             document.getElementById('difference').className = `result-value ${differenceClass}`;
             
-            // Show the results card
+            // Format the source name to handle empty values
+            function formatSourceName(name) {
+                return name ? name : 'Unnamed source';
+            }
+
+            // Update sources breakdown
+            const breakdownContainer = document.getElementById('sourcesBreakdown');
+            breakdownContainer.innerHTML = '';
+            
+            if (sourcesBreakdown.length > 0) {
+                sourcesBreakdown.forEach(source => {
+                    const sourceItem = document.createElement('div');
+                    sourceItem.className = 'result-item';
+                    sourceItem.dataset.id = source.id;
+                    sourceItem.innerHTML = `
+                        <span class="result-label">${formatSourceName(source.name)}</span>
+                        <span class="result-value">${formatCurrency(source.amount)}</span>
+                    `;
+                    breakdownContainer.appendChild(sourceItem);
+                });
+            } else {
+                breakdownContainer.innerHTML = '<div class="source-item">No sources added</div>';
+            }
+            
+            // Show the results card and breakdown
             document.getElementById('resultsCard').style.display = 'block';
+            document.getElementById('breakdownCard').style.display = 'block';
             
             saveSources(); // Save sources after calculation
         }
@@ -374,11 +538,14 @@
             const sourceElements = document.querySelectorAll('#sourcesContainer .source');
 
             sourceElements.forEach(source => {
-                const amountInput = source.querySelector('input[type="number"]');
+                const amountInput = source.querySelector('.source-amount');
+                const nameInput = source.querySelector('.source-name-input');
                 const amount = amountInput.value;
+                const name = nameInput.value;
+                const id = source.dataset.id;
 
                 if (amount) {
-                    sources.push({ amount });
+                    sources.push({ amount, name, id });
                 }
             });
 
@@ -393,6 +560,7 @@
             document.getElementById('sourcesContainer').innerHTML = '';
             document.getElementById('shouldHaveAmount').value = '';
             document.getElementById('resultsCard').style.display = 'none';
+            document.getElementById('breakdownCard').style.display = 'none';
         }
 
         // Add at least one source field if none exist
