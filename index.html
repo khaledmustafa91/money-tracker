@@ -28,6 +28,11 @@
             font-weight: bold;
         }
 
+        .difference {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
         .source {
             margin-bottom: 10px;
         }
@@ -36,12 +41,19 @@
 
 <body>
     <h1>Money Tracker</h1>
-    <div id="sourcesContainer"></div>
+    <div> 
+      <h3> Should have Amount </h3>
+      <input type="number" placeholder="Should have Amount" id="shouldHaveAmount">
+    </div>
+    <div id="sourcesContainer">
+      <h3> Sources </h3>
+    </div>
     <button onclick="addSource()">Add Amount</button>
     <button onclick="calculateTotal()">Calculate Total</button>
     <button onclick="clearData()">Clear Data</button>
 
     <div class="result" id="result"></div>
+    <div class="difference" id="difference"></div>
 
     <script>
         // Load saved amounts from localStorage
@@ -50,6 +62,9 @@
             sources.forEach(source => {
                 addSource(source.amount);
             });
+            const shouldHaveAmount = localStorage.getItem('shouldHaveAmount');
+            console.log(shouldHaveAmount);
+            document.getElementById('shouldHaveAmount').value = shouldHaveAmount;
         }
 
         // Add a new amount input
@@ -73,24 +88,27 @@
 
         // Calculate total amount
         function calculateTotal() {
+            const shouldHaveAmount = parseFloat(document.getElementById('shouldHaveAmount').value);
             const sources = document.querySelectorAll('#sourcesContainer .source');
-            let total = 0;
+            let currentAmount = 0;
 
             sources.forEach(source => {
                 const amountInput = source.querySelector('input[type="number"]');
                 const amount = parseFloat(amountInput.value);
 
                 if (!isNaN(amount)) {
-                    total += amount;
+                    currentAmount += amount;
                 }
             });
 
-            document.getElementById('result').innerText = `Total Amount: ${total.toFixed(2)}`;
+            document.getElementById('result').innerText = `Total Amount: ${currentAmount.toFixed(2)}`;
+            document.getElementById('difference').innerText = `Difference: ${currentAmount - shouldHaveAmount }`;
             saveSources(); // Save sources after calculation
         }
 
         // Save amounts to localStorage
         function saveSources() {
+            const shouldHaveAmount = document.getElementById('shouldHaveAmount').value;
             const sources = [];
             const sourceElements = document.querySelectorAll('#sourcesContainer .source');
 
@@ -104,6 +122,7 @@
             });
 
             localStorage.setItem('moneyTrackerSources', JSON.stringify(sources));
+            localStorage.setItem('shouldHaveAmount', shouldHaveAmount);
         }
 
         // Clear all data
@@ -111,6 +130,7 @@
             localStorage.removeItem('moneyTrackerSources');
             document.getElementById('sourcesContainer').innerHTML = '';
             document.getElementById('result').innerText = '';
+            document.getElementById('shouldHaveAmount').value = '';
         }
 
         // Load amounts on page load
